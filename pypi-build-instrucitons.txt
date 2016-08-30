@@ -1,0 +1,93 @@
+###
+# Maxwell Grady 2016
+#
+# Instructions for building source and wheel for python package
+# Including how to upload to pypi
+#
+###
+
+0. (optional) In you User home directory create a file called '.pypirc'
+        This file contains the authentication info and which pypi servers to upload to
+        Put the following lines in your .pypirc file:
+
+        [distutils]
+        index-servers=
+            pypi
+            pypitest
+
+        [pypi]
+        repository=https://pypi.python.org/pypi
+        username=YourUsername
+        password=YourPassword
+
+        [pypitest]
+        repository=https://testpypi.python.org/pypi
+        username=YourUsername
+        password=YourPassword
+
+1. Create the appropriate structure for you python package:
+
+     MyPackage-Build/             # This top level folder name is arbitrary
+        setup.py
+        setup.cfg
+        LICENSE.txt                   # Optional
+        READEME.md               # Optional
+        mypackage/                   # Folder containing your python code labeled as your package name
+            __init__.py
+            file1.py                       # Your python files
+            file2.py
+            file3.py
+            data/                          # optional data files to include
+              data1.jpg
+              data2.txt
+
+
+3. Create the setup.py file:
+
+from setuptools import setup
+setup(
+  name = 'mypackage',
+  packages = ['mypackage'], # this must be the same as the name above
+  package_data={'mypackage': ['*.txt', '/path/to/your/data/files/*.txt', '*.jpg', '/path/to/your/other/data/files/*.jpg']},
+  # example:  package_data={'mypackage': ['*.jpg', './data/*.jpg']},
+  version = '0.1',
+  description = 'A random test lib',
+  author = 'YourName',
+  author_email = 'The Contact Address you want on PyPi',
+  url = 'Your github url if it exists', # use the URL to the github repo
+  download_url = 'link to your soucre on github'  # direct link to the source archive for this specific version of the code on your github
+  keywords = ['testing', 'logging', 'example'], # arbitrary keywords
+  classifiers = [],
+)
+
+
+4. Create your setup.cfg containing the following:
+
+    [metadata]
+    description-file = README.md
+
+5. Build the source tarball and wheel:
+
+    python setup.py sdist bdist_wheel
+
+6. Assuming the build went fine you can now upload to PyPi Test Server
+
+    python setup.py sdist bdist_wheel upload -r pypitest
+
+7. Assuming the test upload gave you no errors you can now upload to PyPi
+
+    python setup.py sdist bdist_wheel upload -r pypi
+
+8. Notes: When you make changes to your code or setup.py, make sure to change the version number!
+    Then you can rebuild the source and the wheel and push to PyPi with out getting erros about versions already existing.
+    It is helpful to use subincremental build numbers for this reason: example -  in setup() use version=0.1.5
+    You can increment the trailing number frequently to indicate minor changes. etc ...
+
+    You can build the wheels using different python versions and upload them without changing the version number
+    For example:
+        (py27) python setup.py sdist bdist_wheel upload -r pypi  # This builds the source and wheel using your environment called py27
+        Then
+        source deactivate py27
+        source activate py35
+        (py35) python setup.py bdist_wheel upload -r pypi
+        # This uploads a wheel build with python 35 without overwriting the source tarball or needing a new version number
